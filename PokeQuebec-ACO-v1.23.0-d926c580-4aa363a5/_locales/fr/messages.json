@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "PokeQuebec ACO"
+  },
+  "extensionDescription": {
+    "message": "Assistant d’achat PokeQuebec pour Walmart, Amazon Canada et Hobbiesville"
+  },
+  "actionTitle": {
+    "message": "Ouvrir PokeQuebec ACO"
+  }
+}

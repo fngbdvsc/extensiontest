@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="sidepanel.css" />
+    <title>PokeQuebec ACO</title>
+  </head>
+  <body>
+    <header class="brand">
+      <div class="brand-main">
+        <img class="logo" src="logo.png" alt="PokeQuebec logo" />
+        <div class="brand-text">
+          <div class="brand-name">PokeQuebec</div>
+        </div>
+        <!-- Not shown: the base panel bundle reads this element directly (by id,
+             unguarded) during its own startup. Removing it entirely throws and
+             aborts that init, which breaks Discord sign-in too. It carries no
+             visible indicator any more; keep it, keep it hidden. -->
+        <span id="ready" class="hidden" aria-hidden="true">
+          <span id="ready-text"></span>
+        </span>
+      <button
+        id="settings-toggle"
+        class="header-icon settings-toggle hidden"
+        type="button"
+        popovertarget="settings-panel"
+        title="Open settings"
+        aria-label="Open settings"
+        data-i18n-title="settings.open"
+        data-i18n-aria-label="settings.open"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M12 15.25A3.25 3.25 0 1 0 12 8.75a3.25 3.25 0 0 0 0 6.5Z" />
+          <path d="M19.2 13.2a7.8 7.8 0 0 0 .05-1.2 7.8 7.8 0 0 0-.05-1.2l2-1.56-2-3.47-2.45.98a8.6 8.6 0 0 0-2.08-1.2L14.3 3h-4l-.37 2.55a8.6 8.6 0 0 0-2.08 1.2L5.4 5.77l-2 3.47 2 1.56A7.8 7.8 0 0 0 5.35 12c0 .4.02.8.05 1.2l-2 1.56 2 3.47 2.45-.98a8.6 8.6 0 0 0 2.08 1.2L10.3 21h4l.37-2.55a8.6 8.6 0 0 0 2.08-1.2l2.45.98 2-3.47-2-1.56Z" />
+        </svg>
+      </button>
+      <button
+        id="theme"
+        class="theme-toggle"
+        type="button"
+        title="Switch theme"
+        aria-label="Switch theme"
+        data-i18n-title="theme.toggle"
+        data-i18n-aria-label="theme.toggle"
+      >
+        <span id="theme-icon" aria-hidden="true">☾</span>
+      </button>
+      </div>
+
+      <div
+        id="retailer-monitoring-status"
+        class="retailer-monitoring-status hidden"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-label="Walmart monitoring status"
+        data-i18n-aria-label="walmartMonitoring.label"
+      >
+        <span class="retailer-monitoring-dot" aria-hidden="true"></span>
+        <strong id="retailer-monitoring-title">RUNNING</strong>
+        <span id="retailer-monitoring-detail" class="visually-hidden"></span>
+      </div>
+
+      <div id="header-retailer-switcher" class="retailer-switcher hidden">
+        <div
+          class="segmented-control retailer-selector"
+          role="tablist"
+          aria-label="Retailer"
+          data-i18n-aria-label="retailer.group"
+        >
+          <button id="retailer-walmart" type="button" role="tab" data-retailer="walmart" aria-selected="true" aria-controls="app" tabindex="0" title="Walmart" aria-label="Walmart" data-i18n="retailer.walmart" data-i18n-title="retailer.walmart" data-i18n-aria-label="retailer.walmart">Walmart</button>
+          <button id="retailer-walmart-queue" type="button" role="tab" data-retailer="walmart_queue" aria-selected="false" aria-controls="app" tabindex="-1" title="Walmart Queue" aria-label="Walmart Queue" data-i18n="retailer.walmartQueue" data-i18n-title="retailer.walmartQueue" data-i18n-aria-label="retailer.walmartQueue">Queue</button>
+          <button id="retailer-amazon" type="button" role="tab" data-retailer="amazon" aria-selected="false" aria-controls="app" tabindex="-1" title="Amazon" aria-label="Amazon" data-i18n="retailer.amazon" data-i18n-title="retailer.amazon" data-i18n-aria-label="retailer.amazon">Amazon</button>
+          <button id="retailer-hobbiesville" type="button" role="tab" data-retailer="hobbiesville" aria-selected="false" aria-controls="app" tabindex="-1" title="Hobbiesville" aria-label="Hobbiesville" data-i18n="retailer.hobbiesville" data-i18n-title="retailer.hobbiesville" data-i18n-aria-label="retailer.hobbiesville">Hobbiesville</button>
+        </div>
+      </div>
+    </header>
+
+    <div
+      id="settings-panel"
+      class="settings-popover"
+      popover
+      aria-label="PokeQuebec ACO settings"
+      data-i18n-aria-label="settings.panelLabel"
+    >
+      <div class="settings-head">
+        <div>
+          <h2 data-i18n="settings.title">Settings</h2>
+          <p data-i18n="settings.subtitle">Access, language, and alerts</p>
+        </div>
+        <button
+          class="header-icon"
+          type="button"
+          popovertarget="settings-panel"
+          popovertargetaction="hide"
+          title="Close settings"
+          aria-label="Close settings"
+          data-i18n-title="settings.close"
+          data-i18n-aria-label="settings.close"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="m7 7 10 10M17 7 7 17" />
+          </svg>
+        </button>
+      </div>
+
+      <section class="settings-section">
+        <h2 data-i18n="access.title">Access</h2>
+        <p id="access-msg" class="muted">Not signed in. Sign in with Discord to continue.</p>
+        <div class="actions">
+          <button id="signout" type="button" class="secondary hidden" data-i18n="access.signOut">Sign out</button>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h2 data-i18n="language.title">Language</h2>
+        <div class="segmented-control language-selector" role="group" aria-label="Interface language" data-i18n-aria-label="language.group">
+          <button id="language-fr" type="button" data-language="fr" aria-pressed="false" data-i18n="language.french">French</button>
+          <button id="language-en" type="button" data-language="en" aria-pressed="true" data-i18n="language.english">English</button>
+        </div>
+        <p class="muted" data-i18n="language.detail">Changes apply immediately and are saved on this device.</p>
+      </section>
+
+      <section class="settings-section">
+        <h2 data-i18n="alerts.title">PokeQuebec alerts</h2>
+        <div id="feed-body">
+          <p id="feed-status" class="muted settings-status" data-state="idle" role="status">Sign in with Discord to connect PokeQuebec alerts.</p>
+
+          <label class="check feed-enabled">
+            <input id="feed-enabled" type="checkbox" checked />
+            <span data-i18n="feed.listen">Listen for alerts while this panel is open</span>
+          </label>
+
+          <div
+            class="store-monitoring-controls"
+            role="group"
+            aria-labelledby="store-monitoring-detail"
+          >
+            <p
+              id="store-monitoring-detail"
+              class="fine"
+              data-i18n="feed.storeMonitoringDetail"
+            >Choose which store alerts can start checkout.</p>
+            <label class="check">
+              <input id="monitor-walmart-enabled" type="checkbox" checked />
+              <span data-i18n="feed.monitorWalmart">Walmart and Walmart Queue</span>
+            </label>
+            <label class="check">
+              <input id="monitor-amazon-enabled" type="checkbox" checked />
+              <span data-i18n="feed.monitorAmazon">Amazon</span>
+            </label>
+            <label class="check">
+              <input id="monitor-hobbiesville-enabled" type="checkbox" checked />
+              <span data-i18n="feed.monitorHobbiesville">Hobbiesville</span>
+            </label>
+          </div>
+
+          <label class="check advanced-setting feed-enabled">
+            <input
+              id="pokemon-center-auto-open-enabled"
+              type="checkbox"
+              aria-describedby="pokemon-center-auto-open-detail"
+            />
+            <span data-i18n="feed.pokemonCenterAutoOpen">Open Pokémon Center for queue alerts</span>
+          </label>
+          <p
+            id="pokemon-center-auto-open-detail"
+            class="fine"
+            data-i18n="feed.pokemonCenterAutoOpenDetail"
+          >On by default. Opens the official Canadian Pokémon Center site in a new tab.</p>
+
+          <p class="fine" data-i18n="feed.authorization">Your PokeQuebec Discord role unlocks checkout and private monitor alerts.</p>
+
+          <div class="actions">
+            <button id="feed-reconnect" type="button" data-i18n="feed.reconnect">Reconnect</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-section developer-mode-setting">
+        <h2 data-i18n="developerMode.title">Developer mode</h2>
+        <label class="check">
+          <input id="developer-mode-enabled" type="checkbox" />
+          <span data-i18n="developerMode.enable">Enable developer mode</span>
+        </label>
+      </section>
+
+    </div>
+
+    <section id="auth-empty-state" class="auth-empty-state" aria-labelledby="auth-empty-title">
+      <div class="auth-empty-content">
+        <div class="discord-mark" aria-hidden="true">
+          <img src="discord-symbol-white.svg" alt="" />
+        </div>
+        <h1 id="auth-empty-title" data-i18n="auth.title">Connect to continue</h1>
+        <p data-i18n="auth.description">Sign in with Discord to confirm your PokeQuebec access and load your saved setup.</p>
+        <button id="auth" type="button" class="primary discord" aria-busy="false" data-auth-state="idle">
+          <span class="auth-spinner" aria-hidden="true"></span>
+          <span class="auth-success-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M5 12.5 9.5 17 19 7.5"></path>
+            </svg>
+          </span>
+          <span class="auth-button-label" data-i18n="auth.button">Sign in with Discord</span>
+        </button>
+        <p id="auth-error" class="auth-error" role="alert" hidden></p>
+      </div>
+    </section>
+
+    <div id="signed-in-content" class="hidden">
+      <section class="card">
+        <div class="hero-row">
+          <div class="hero-state">
+            <div class="mode-label" id="mode-label" data-mode="checkout">ACO</div>
+            <p class="mode-sub" id="mode-sub" data-i18n="main.tagline">Automatic checkout</p>
+          </div>
+          <div class="hero-clock">
+            <h2 data-i18n="main.localTime">Local time</h2>
+            <div class="clock" id="clock" role="timer" aria-label="Local time" data-i18n-aria-label="main.localTime">--:--:--.-</div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="walmart-automation"
+        class="walmart-automation hidden"
+        aria-label="Walmart automation"
+        data-i18n-aria-label="automation.label"
+      >
+        <p id="walmart-automation-summary" role="status" aria-live="polite" aria-atomic="true"></p>
+        <button id="walmart-automation-stop" class="stop-btn" type="button" data-i18n="automation.stopAll">Stop all</button>
+      </section>
+
+      <section id="amazon-automation" class="walmart-automation hidden" aria-label="Amazon automation" data-i18n-aria-label="amazonTasks.automation">
+        <p id="amazon-automation-summary" role="status" aria-live="polite" aria-atomic="true"></p>
+        <button id="amazon-automation-stop" class="stop-btn" type="button" data-i18n="automation.stopAll">Stop all</button>
+        <ul id="amazon-orphan-tasks" class="hidden"></ul>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2 data-i18n="activity.title">Activity</h2>
+          <div class="head-actions">
+            <button id="stop" class="stop-btn hidden" type="button" data-i18n="common.stop">Stop</button>
+            <button id="clear" class="small" type="button" data-i18n="common.clear">Clear</button>
+          </div>
+        </div>
+        <ol id="log" class="log" aria-live="polite"></ol>
+      </section>
+    </div>
+
+    <div class="hidden" aria-hidden="true">
+      <div class="run-state" id="run-state" data-state="idle">
+        <span class="run-dot"></span>
+        <span class="run-label" id="run-label">Offline</span>
+      </div>
+      <p class="run-sub" id="run-sub">Not signed in</p>
+
+    </div>
+
+    <dialog id="sku-dialog" class="sku-dialog" aria-labelledby="sku-dialog-title">
+      <div class="sku-dialog-sheet">
+        <div class="sku-dialog-head">
+          <div>
+            <h2 id="sku-dialog-title" data-i18n="sku.title">Walmart product</h2>
+            <p id="sku-dialog-subtitle" data-i18n="sku.subtitle">Walmart Canada · Auto BE</p>
+          </div>
+          <button
+            id="sku-dialog-close"
+            class="header-icon"
+            type="button"
+            title="Close product setup"
+            aria-label="Close product setup"
+            data-i18n-title="sku.close"
+            data-i18n-aria-label="sku.close"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="m7 7 10 10M17 7 7 17" />
+            </svg>
+          </button>
+        </div>
+
+        <button id="product-toggle" class="hidden" type="button" aria-expanded="true" tabindex="-1" data-i18n="sku.product">Product</button>
+        <div id="product-body">
+          <div id="product-id-field">
+            <label id="product-id-label" for="sku" data-i18n="sku.label">SKU</label>
+            <input id="sku" type="text" placeholder="SKU" data-i18n-placeholder="sku.placeholder" />
+          </div>
+
+          <div id="hobbiesville-url-field" class="hidden">
+            <label for="hobbiesville-url" data-i18n="hobbiesvilleUrl.label">Product link</label>
+            <input id="hobbiesville-url" type="url" autocomplete="off" placeholder="https://www.hobbiesville.com/products/..." data-i18n-placeholder="hobbiesvilleUrl.placeholder" />
+            <p class="fine field-hint" data-i18n="hobbiesvilleUrl.hint">Paste the product page. The exact Shopify variant is saved automatically.</p>
+          </div>
+
+          <div id="hobbiesville-variant-field" class="hidden">
+            <label for="hobbiesville-variant" data-i18n="hobbiesvilleVariant.label">Variant</label>
+            <select id="hobbiesville-variant">
+              <option value="" data-i18n="hobbiesvilleVariant.select">Choose a variant</option>
+            </select>
+          </div>
+
+          <div id="offer-id-field">
+            <label for="offerid" data-i18n="offerId.label">Offer ID</label>
+            <input id="offerid" type="text" placeholder="Optional PokeQuebec alert Offer ID" data-i18n-placeholder="offerId.placeholder" />
+            <p class="fine field-hint" data-i18n="offerId.hint">Used first when matching PokeQuebec alerts. SKU is used when no Offer ID matches.</p>
+          </div>
+
+          <label for="name" data-i18n="productName.label">Product name</label>
+          <input id="name" type="text" placeholder="Optional display name" data-i18n-placeholder="productName.placeholder" />
+
+          <div id="quantity-field">
+            <label for="quantity" data-i18n="quantity.label">Units per checkout</label>
+            <input id="quantity" type="number" min="1" max="99" step="1" value="1" />
+          </div>
+
+          <div id="walmart-product-options" class="purchase-goal-control">
+            <label class="check purchase-goal-toggle" for="walmart-max-units-enabled">
+              <input id="walmart-max-units-enabled" type="checkbox" aria-controls="walmart-purchase-goal" />
+              <span data-i18n="purchaseGoal.enable">Limit purchases over 24 hours</span>
+            </label>
+            <div id="walmart-purchase-goal" class="purchase-goal-fields">
+              <label for="walmart-max-units" data-i18n="walmartTasks.maxUnits">24-hour purchase limit</label>
+              <input id="walmart-max-units" type="number" min="1" max="99" step="1" required />
+              <p class="fine" data-i18n="walmartTasks.goalHint">Stops after this many confirmed units in a rolling 24-hour window.</p>
+            </div>
+          </div>
+
+          <div id="amazon-product-options" class="purchase-goal-control hidden">
+            <label class="check purchase-goal-toggle" for="amazon-max-units-enabled">
+              <input id="amazon-max-units-enabled" type="checkbox" aria-controls="amazon-purchase-goal" />
+              <span data-i18n="purchaseGoal.enable">Limit purchases over 24 hours</span>
+            </label>
+            <div id="amazon-purchase-goal" class="purchase-goal-fields">
+              <label for="amazon-max-units" data-i18n="amazonTasks.maxUnits">24-hour purchase limit</label>
+              <input id="amazon-max-units" type="number" min="1" max="99" step="1" required />
+              <p class="fine" data-i18n="amazonTasks.goalHint">Stops after this many confirmed units in a rolling 24-hour window.</p>
+            </div>
+
+            <details class="amazon-advanced">
+              <summary data-i18n="amazonTasks.offerDetails">Offer details</summary>
+              <label for="amazon-saved-offer" data-i18n="offerId.label">Offer ID</label>
+              <input id="amazon-saved-offer" type="text" readonly />
+              <p class="fine" data-i18n="amazonTasks.offerHint">Saved offer, freshness unknown. The current offer and seller are checked again on Amazon.</p>
+            </details>
+          </div>
+
+          <div id="hobbiesville-product-options" class="purchase-goal-control hidden">
+            <label class="check purchase-goal-toggle" for="hobbiesville-max-units-enabled">
+              <input id="hobbiesville-max-units-enabled" type="checkbox" aria-controls="hobbiesville-purchase-goal" />
+              <span data-i18n="purchaseGoal.enable">Limit purchases over 24 hours</span>
+            </label>
+            <div id="hobbiesville-purchase-goal" class="purchase-goal-fields">
+              <label for="hobbiesville-max-units" data-i18n="hobbiesvilleTasks.maxUnits">24-hour purchase limit</label>
+              <input id="hobbiesville-max-units" type="number" min="1" max="99" step="1" required />
+              <p class="fine" data-i18n="hobbiesvilleTasks.goalHint">Stops after this many confirmed units in a rolling 24-hour window.</p>
+            </div>
+          </div>
+
+          <input class="hidden" type="radio" name="mode" value="be" checked aria-hidden="true" tabindex="-1" />
+
+          <div class="actions sku-dialog-actions">
+            <button id="save" class="primary" type="button" data-i18n="sku.save">Save product</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <span id="start" aria-hidden="true" data-runtime-hook="checkout"></span>
+
+    <section id="app" class="hidden" role="tabpanel" aria-labelledby="retailer-walmart">
+      <section id="action-delay-card" class="card hidden">
+        <div class="card-head">
+          <div class="card-head-title">
+            <h2 data-i18n="actionDelay.title">Checkout timing</h2>
+          </div>
+        </div>
+        <div id="action-delay-field">
+          <label for="actiondelay" data-i18n="actionDelay.label">Delay between actions (seconds)</label>
+          <input id="actiondelay" type="number" min="0" step="0.1" value="3" />
+          <p class="fine" data-i18n="actionDelay.hint">Pause before each cart and checkout action. Applies to every saved product.</p>
+        </div>
+      </section>
+
+      <section class="card saved-products-card">
+        <div class="card-head saved-products-head">
+          <div class="card-head-title">
+            <h2 data-i18n="saved.title">Saved products</h2>
+            <span id="saved-count" class="count">0</span>
+          </div>
+          <div class="head-actions">
+            <button id="delete-all-saved" class="small saved-head-icon saved-head-delete" type="button" data-i18n-title="saved.deleteAllTitle" data-i18n-aria-label="saved.deleteAll" aria-label="Delete all saved products" disabled>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4.5 5.5H15.5" />
+                <path d="M8 3.5H12" />
+                <path d="M6 5.5L6.75 16H13.25L14 5.5" />
+                <path d="M8.5 8V13.5M11.5 8V13.5" />
+              </svg>
+            </button>
+            <button id="import" class="small saved-head-icon" type="button" data-i18n-title="monitorImport.title" data-i18n-aria-label="monitorImport.button" aria-label="Sync monitored products">
+              <svg class="monitor-import-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 2.75V11" />
+                <path d="M6.75 8L10 11.25 13.25 8" />
+                <path d="M4.5 12.75V15.25A1.75 1.75 0 0 0 6.25 17H13.75A1.75 1.75 0 0 0 15.5 15.25V12.75" />
+              </svg>
+            </button>
+            <button id="sku-dialog-open" class="small primary hidden" type="button" hidden data-i18n="saved.add">Add product</button>
+            <!-- Legacy export hook required by base panel. -->
+            <button id="export" class="hidden" type="button" aria-hidden="true" tabindex="-1"></button>
+          </div>
+        </div>
+        <p id="monitor-import-hint" class="fine" data-i18n="monitorImport.hint">Syncs this list with active PokeQuebec monitors. Matching products keep their quantities.</p>
+        <p id="monitor-import-status" class="fine hidden" role="status" aria-live="polite"></p>
+        <dialog id="delete-all-confirmation" class="saved-bulk-confirmation" aria-modal="true" aria-labelledby="delete-all-message">
+          <p id="delete-all-message"></p>
+          <div class="actions">
+            <button id="delete-all-cancel" class="small" type="button" data-i18n="common.cancel">Cancel</button>
+            <button id="delete-all-confirm" class="small stop-btn" type="button" data-i18n="saved.deleteAllConfirm">Delete all</button>
+          </div>
+        </dialog>
+        <ul id="saved" class="saved"></ul>
+        <p id="saved-empty" class="fine" data-i18n="saved.empty">No products saved yet. Select Add product to create one.</p>
+        <div id="queue-monitor-refresh" class="queue-monitor-refresh" role="status" aria-live="polite" hidden>
+          <div class="queue-monitor-refresh-content">
+            <span class="queue-monitor-refresh-spinner" aria-hidden="true"></span>
+            <span class="queue-monitor-refresh-label" data-i18n="queue.monitorRefreshing">Refreshing Walmart Queue status</span>
+          </div>
+        </div>
+      </section>
+
+    </section>
+    <script src="pokequebec-aco.js" defer></script>
+  </body>
+</html>

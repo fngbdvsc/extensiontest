@@ -1,0 +1,74 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_extensionName__",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "en",
+  "version": "1.23.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqR30QRvjE5FOmTIwlj8neF8YXWa/XzVXtjZv6Nw4Bh+m+8v2d+U3hg8N0zFyL0OhAsuPkeit7ltf5TXb+5KIYOji6zSGBNUP0n6SwzGvLhNQ5UMoPc4Crgyo5Gq7ggTV6Fzfo+dJq6Z5qjgDUhq7EaC/sTPppwawUF3NnOSYhUs7Zr+1JpprI+FSiP9z9h/zgjOxyZdoVuI/9KAYsxE5fngaoUCGo0yFiQfK1lVIfrt3SeLgHx6oaoAWNGeCkYyfbDetKE2EFn1MN/GWjK+5NUYpNTYzEPhFh7tQaZJOL0BFmpF0Q4p1SUoiQ2ywt+KP8Ims5D5XqY8BgcwhBMswewIDAQAB",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "sidePanel",
+    "identity",
+    "alarms",
+    "debugger"
+  ],
+  "host_permissions": [
+    "https://*.walmart.ca/*",
+    "https://identity.walmart.com/*",
+    "https://*.amazon.ca/*",
+    "https://hobbiesville.com/*",
+    "https://www.hobbiesville.com/*",
+    "https://shop.app/*",
+    "https://pay.shopify.com/*",
+    "https://redtrainer.myshopify.com/*",
+    "https://www.google.ca/*",
+    "https://www.google.com/*",
+    "https://pokequebecmonitors-production.up.railway.app/*"
+  ],
+  "background": {
+    "service_worker": "src/pokequebec-aco.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.walmart.ca/*"
+      ],
+      "js": [
+        "src/walmart-queue-observer.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://*.walmart.ca/*"
+      ],
+      "js": [
+        "src/walmart-queue-bridge.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "icons": {
+    "16": "src/icon16.png",
+    "32": "src/icon32.png",
+    "48": "src/icon48.png",
+    "128": "src/icon128.png"
+  },
+  "action": {
+    "default_title": "__MSG_actionTitle__",
+    "default_icon": {
+      "16": "src/icon16.png",
+      "32": "src/icon32.png",
+      "48": "src/icon48.png",
+      "128": "src/icon128.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "src/sidepanel.html"
+  },
+  "version_name": "1.23.0"
+}

@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "PokeQuebec ACO"
+  },
+  "extensionDescription": {
+    "message": "PokeQuebec checkout assistant for Walmart, Amazon Canada, and Hobbiesville"
+  },
+  "actionTitle": {
+    "message": "Open PokeQuebec ACO"
+  }
+}
