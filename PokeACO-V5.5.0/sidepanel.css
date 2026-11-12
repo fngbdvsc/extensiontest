@@ -1,0 +1,1761 @@
+/* Hallmark · genre: modern-minimal · macrostructure: n/a (app side panel — IA preserved) ·
+ * theme: custom "sky console" — brand blue (hue 260) on airy blue paper, navy console well,
+ * red reserved for danger · enrichment: none · scope: visuals-only redesign (user-directed: keep blue vibe)
+ * voice: system sans UI + mono data register · accent: brand blue on CTAs/selection; ≤5% per viewport
+ * structure pass: monitor section · saved-lists-first · trigger/timing groups · tab semantics · log timestamps
+ */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4
+ * slop test: contrast pass (46–50) · tokens pass (58) · honest pass (56) · chrome pass (57) ·
+ * responsive pass (36, 59, 61–69)
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* type */
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-data: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 16px;
+  --text-clock: 34px;
+  --track-label: 0.07em;
+
+  /* colour — "Midnight" neutrals + Pokeball-red accent (redesign) */
+  --color-paper: #131316;
+  --color-sky: #17171b;
+  --color-card: #1c1c21;
+  --color-card-2: #232329;
+  --color-well: #232329;
+  --color-rule: #2c2c34;
+  --color-rule-2: #3a3a44;
+  --color-ink: #f3f3f5;
+  --color-ink-2: #c9c9d0;
+  --color-muted: #8a8a94;
+  --color-faint: #5c5c66;
+  --color-accent: #ff4d4d;
+  --color-accent-deep: #ff3b3b;
+  --color-accent-deeper: #e63030;
+  --color-accent-ink: #1a0000;
+  --color-accent-wash: rgba(255, 77, 77, 0.13);
+  --color-console: #0d0d0f;
+  --color-console-ink: #d7d7de;
+  --color-console-marker: #ff6b6b;
+  --color-console-thumb: #3a3a44;
+  --color-danger: #ff6b6b;
+  --color-danger-rule: rgba(255, 107, 107, 0.45);
+  --color-danger-wash: rgba(255, 107, 107, 0.12);
+  --color-success: #34d399;
+  --color-success-dot: #34d399;
+  --color-warn: #fbbf24;
+  --color-warn-dot: #fbbf24;
+  --color-idle-dot: #5c5c66;
+  --color-focus: #ff6b6b;
+  --color-selection: rgba(255, 77, 77, 0.28);
+
+  /* depth — one whisper, never stacked */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45);
+
+  /* space — dense-panel scale */
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 6px;
+  --space-sm: 8px;
+  --space-md: 10px;
+  --space-lg: 12px;
+  --space-xl: 16px;
+  --space-2xl: 20px;
+  --space-3xl: 28px;
+
+  /* shape */
+  --radius-card: 12px;
+  --radius-ctl: 8px;
+  --radius-chip: 6px;
+  --radius-pill: 999px;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 110ms;
+  --dur-short: 190ms;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100dvh;
+  background: linear-gradient(180deg, var(--color-sky), var(--color-paper) 320px);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-rule-2) transparent;
+}
+
+::selection {
+  background: var(--color-selection);
+}
+
+button,
+input {
+  font: inherit;
+  min-width: 0;
+}
+
+/* ---------- shell + monitor: header and server pill share the monitor's top row ---------- */
+
+.shell {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  padding: var(--space-md) var(--space-lg) var(--space-2xl);
+}
+
+.monitor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.monitor > .header {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.monitor > .server-status {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: end;
+}
+
+.monitor > .clock-panel,
+.monitor > .status-panel {
+  grid-column: 1 / -1;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-2xs) 0 0 var(--space-3xs);
+}
+
+.brand-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.header .brand-text p {
+  margin: 2px 0 0;
+  color: var(--color-accent-deep);
+  font-family: var(--font-data);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.server-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-2xs) var(--space-md);
+  background: var(--color-card);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-card);
+  color: var(--color-muted);
+  font-family: var(--font-data);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.server-status-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: var(--radius-pill);
+  background: var(--color-idle-dot);
+}
+
+.server-status[data-state="open"] {
+  color: var(--color-success);
+}
+
+.server-status[data-state="open"] .server-status-dot {
+  background: var(--color-success-dot);
+}
+
+.server-status[data-state="connecting"],
+.server-status[data-state="reconnecting"] {
+  color: var(--color-warn);
+}
+
+.server-status[data-state="connecting"] .server-status-dot,
+.server-status[data-state="reconnecting"] .server-status-dot {
+  background: var(--color-warn-dot);
+  animation: status-pulse 1.4s var(--ease-in-out) infinite;
+}
+
+@keyframes status-pulse {
+  50% { opacity: 0.35; }
+}
+
+/* ---------- panels ---------- */
+
+.panel {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  padding: var(--space-lg);
+  background: var(--color-card);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.subpanel {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-md);
+}
+
+h2 {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  list-style: none;
+  cursor: pointer;
+  color: var(--color-ink-2);
+  font-size: var(--text-2xs);
+  font-weight: 650;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  flex: 0 0 auto;
+  border-right: 1.5px solid var(--color-muted);
+  border-bottom: 1.5px solid var(--color-muted);
+  transform: rotate(-45deg);
+  transition: transform var(--dur-micro) var(--ease-out);
+}
+
+details[open] > summary::after {
+  transform: rotate(45deg);
+}
+
+/* major blocks inside a disclosure panel get a beat more air than the base gap */
+details.panel > form + .subpanel,
+details.panel > .subpanel + form,
+details.panel > .subpanel + .subpanel {
+  margin-top: var(--space-xs);
+}
+
+@media (hover: hover) {
+  summary:hover {
+    color: var(--color-ink);
+  }
+}
+
+summary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-chip);
+}
+
+summary:active {
+  color: var(--color-ink);
+}
+
+/* ---------- clock — unboxed hero readout ---------- */
+
+.clock-panel {
+  gap: var(--space-3xs);
+  padding: var(--space-xs) 0 var(--space-2xs);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.clock-panel h2 {
+  text-align: center;
+}
+
+.clock-display {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: min(var(--text-clock), 9.5vw);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  text-align: center;
+  color: var(--color-accent-deep);
+}
+
+/* ---------- status — console well ---------- */
+
+.status-panel {
+  gap: var(--space-sm);
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.status-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.auto-stop {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.auto-stop input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.status-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.status-log {
+  display: grid;
+  gap: var(--space-2xs);
+  min-height: 52px;
+  max-height: 168px;
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-console);
+  border-radius: var(--radius-ctl);
+  color: var(--color-console-ink);
+  font-family: var(--font-data);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.55;
+  list-style: none;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-console-thumb) transparent;
+  word-break: break-word;
+}
+
+/* each entry carries its wall-clock time in the margin */
+.status-log li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-sm);
+}
+
+.status-log li::before {
+  content: attr(data-time);
+  color: var(--color-console-marker);
+}
+
+/* ---------- site tabs ---------- */
+
+.site-tabs {
+  display: grid;
+  /* one equal column per visible tab, so a hidden retailer leaves no gap */
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-3xs);
+  padding: var(--space-3xs);
+  background: var(--color-well);
+  border: 1px solid var(--color-rule);
+  /* track radius stays concentric with the chip radius inside it */
+  border-radius: calc(var(--radius-chip) + var(--space-3xs));
+}
+
+.site-tabs button {
+  min-height: 30px;
+  padding: var(--space-2xs) var(--space-3xs);
+  border: 1px solid transparent;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+  font-weight: 550;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (hover: hover) {
+  .site-tabs button:hover:not(.selected) {
+    color: var(--color-ink-2);
+    background: var(--color-card);
+  }
+}
+
+.site-tabs button.selected {
+  background: var(--color-accent-deep);
+  border-color: var(--color-accent-deep);
+  color: var(--color-accent-ink);
+  font-weight: 650;
+}
+
+.site-panel {
+  display: grid;
+  gap: var(--space-md);
+}
+
+/* ---------- forms ---------- */
+
+label {
+  display: grid;
+  gap: var(--space-2xs);
+  color: var(--color-ink-2);
+  font-size: var(--text-xs);
+  font-weight: 550;
+}
+
+.field-hint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.consent-hint {
+  font-size: var(--text-2xs);
+}
+
+input {
+  width: 100%;
+  min-height: 34px;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-rule-2);
+  border-radius: var(--radius-ctl);
+  background: var(--color-card);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  transition:
+    background-color var(--dur-micro) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out);
+}
+
+input::placeholder {
+  color: var(--color-faint);
+}
+
+@media (hover: hover) {
+  input:hover:not(:disabled):not(:focus) {
+    background: var(--color-card-2);
+  }
+}
+
+input:focus-visible {
+  outline-color: var(--color-focus);
+  border-color: var(--color-accent);
+}
+
+input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+input:user-invalid {
+  border-color: var(--color-danger);
+}
+
+input:-webkit-autofill {
+  -webkit-box-shadow: inset 0 0 0 1000px var(--color-card);
+  -webkit-text-fill-color: var(--color-ink);
+}
+
+/* machine data reads in mono: SKUs, ids, quantities, times, card fields */
+input[type="number"],
+input[inputmode="numeric"],
+input[inputmode="tel"],
+#sku,
+#costco-sku,
+#ebgames-sku,
+#offer-id,
+#costco-pid {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* group labels share the overline voice of section heads */
+.trigger-group legend {
+  padding: 0 var(--space-xs) 0 0;
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.trigger-group {
+  display: grid;
+  gap: var(--space-md);
+  margin: 0;
+  padding: var(--space-xs) 0 0;
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+}
+
+/* the panel logic hides these fields as one unit — the group shell follows */
+.trigger-group:not(:has(> label:not(.hidden))) {
+  display: none;
+}
+
+/* paired short fields share a row; inputs stay baseline-aligned even if a label wraps */
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+  align-items: end;
+}
+
+.field-row:has(> .hidden) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* nested set-once disclosure inside a panel (Timing, Card on file) */
+details.tuning {
+  display: grid;
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-rule);
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-card);
+  border: 1px solid var(--color-rule-2);
+  border-radius: var(--radius-ctl);
+  color: var(--color-ink-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-micro) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-micro) var(--ease-out);
+}
+
+.toggle-row input {
+  flex-shrink: 0;
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  accent-color: var(--color-accent-deep);
+}
+
+@media (hover: hover) {
+  .toggle-row:hover {
+    background: var(--color-card-2);
+  }
+}
+
+.toggle-row:active {
+  background: var(--color-card-2);
+}
+
+.toggle-row:has(input:checked) {
+  border-color: var(--color-accent-deep);
+  box-shadow: inset 0 0 0 1px var(--color-accent-deep);
+  background: var(--color-accent-wash);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.toggle-row:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Hallmark · component: Amazon checkout · existing Midnight tokens · compact inline controls */
+.amazon-checkout {
+  gap: var(--space-sm);
+}
+
+/* ---------- switch ---------- */
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-2xs) var(--space-3xs);
+  color: var(--color-ink-2);
+  font-size: var(--text-xs);
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.switch-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.switch-track {
+  position: relative;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--color-rule-2);
+  transition: background-color var(--dur-micro) var(--ease-out);
+}
+
+.switch-track::after {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  background: var(--color-card);
+  content: "";
+  transition: transform var(--dur-micro) var(--ease-out);
+}
+
+.switch-input:checked + .switch-track {
+  background: var(--color-accent-deep);
+}
+
+.switch-input:checked + .switch-track::after {
+  transform: translateX(14px);
+}
+
+.switch-input:focus-visible + .switch-track {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.switch-row:active > .switch-track,
+.switch-control:active .switch-track {
+  background: var(--color-muted);
+}
+
+.switch-row:active > .switch-input:checked + .switch-track,
+.switch-control:active .switch-input:checked + .switch-track {
+  background: var(--color-accent-deeper);
+}
+
+.switch-control {
+  display: inline-flex;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.switch-row:has(.switch-input:checked) .switch-text {
+  color: var(--color-ink);
+}
+
+/* Master listener off → per-site switches are inert until it returns. */
+.switch-row:has(.switch-input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.switch-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.discord-auth-status {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.checkout-tasks-header, .checkout-task-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.checkout-tasks-header h2 { display: inline; margin-right: var(--space-sm); }
+#checkout-tasks-error { color: var(--color-danger); }
+.checkout-task-count { color: var(--color-muted); font-size: var(--text-xs); }
+.checkout-task-list { list-style: none; padding: 0; margin: var(--space-lg) 0; display: grid; gap: var(--space-sm); max-height: 400px; overflow-y: auto; }
+.checkout-task { padding: var(--space-lg); border: 1px solid var(--color-rule); border-radius: var(--radius-ctl); background: var(--color-card-2); }
+.checkout-task-heading h3 { margin: 0; font-size: var(--text-sm); font-weight: 650; overflow-wrap: anywhere; }
+.checkout-task-badge { flex-shrink: 0; font-size: var(--text-2xs); color: var(--color-ink-2); border: 1px solid var(--color-rule-2); border-radius: var(--radius-chip); padding: 2px 6px; }
+.checkout-task-meta, .checkout-task-sku { margin: 4px 0 0; color: var(--color-muted); font-size: var(--text-2xs); }
+.checkout-task-sku { font-family: var(--font-data); }
+.checkout-task-message { margin: var(--space-md) 0 0; font-size: var(--text-xs); color: var(--color-ink-2); overflow-wrap: anywhere; }
+.checkout-task-timing { margin: 5px 0 0; font-size: var(--text-2xs); color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.checkout-task-actions, .checkout-tasks-footer { display: flex; justify-content: flex-end; gap: var(--space-sm); margin-top: var(--space-md); }
+.checkout-task-actions button { flex: 0 1 auto; }
+.checkout-task[data-state="retry_wait"] .checkout-task-badge, .checkout-task[data-state="retry_wait"] .checkout-task-timing { color: var(--color-warn); }
+.checkout-task[data-state="order_submitted"] .checkout-task-badge { color: var(--color-success); }
+.checkout-task[data-state="failed"] .checkout-task-badge, .checkout-task[data-state="needs_manual_action"] .checkout-task-badge { color: var(--color-danger); }
+.checkout-task[data-state="stopped"] { opacity: .75; }
+@media (max-width: 360px) { .checkout-task-heading { flex-direction: column; gap: 6px; } }
+
+/* ---------- buttons ---------- */
+
+button {
+  min-height: 34px;
+  padding: var(--space-xs) var(--space-lg);
+  border: 1px solid var(--color-rule-2);
+  border-radius: var(--radius-ctl);
+  background: var(--color-card);
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    background-color var(--dur-micro) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out),
+    color var(--dur-micro) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
+}
+
+@media (hover: hover) {
+  button:hover:not(:disabled) {
+    background: var(--color-accent-wash);
+    border-color: var(--color-accent);
+    color: var(--color-ink);
+  }
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+button.primary {
+  background: var(--color-accent-deep);
+  border-color: var(--color-accent-deep);
+  color: var(--color-accent-ink);
+}
+
+@media (hover: hover) {
+  button.primary:hover:not(:disabled) {
+    background: var(--color-accent-deeper);
+    border-color: var(--color-accent-deeper);
+    color: var(--color-accent-ink);
+  }
+}
+
+/* blue ring on a blue fill vanishes — primary gets a paper inner ring + ink outer ring */
+button.primary:focus-visible {
+  outline: 2px solid var(--color-card);
+  outline-offset: 0;
+  box-shadow: 0 0 0 4px var(--color-ink);
+}
+
+button.secondary {
+  background: var(--color-card);
+  border-color: var(--color-rule-2);
+  color: var(--color-ink-2);
+}
+
+button.danger {
+  border-color: var(--color-danger-rule);
+  color: var(--color-danger);
+}
+
+@media (hover: hover) {
+  button.danger:hover:not(:disabled) {
+    background: var(--color-danger-wash);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+  }
+}
+
+button.small {
+  min-height: 26px;
+  padding: var(--space-3xs) var(--space-md);
+  border-radius: var(--radius-chip);
+  font-size: var(--text-2xs);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+/* the money button leads its row */
+.actions:has(> .primary) {
+  grid-template-columns: 1.2fr 1fr;
+}
+
+/* below ~360px the asymmetry would clip secondary labels — flatten it */
+@media (max-width: 22.4rem) {
+  .actions:has(> .primary) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* a row with one visible button goes full width instead of half-empty */
+.actions:not(:has(> :not(.hidden) ~ :not(.hidden))) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* expiry / cvv row — three labelled inputs share one row */
+.actions:has(> label) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+/* ---------- saved lists + cart ---------- */
+
+.account-list,
+.sku-list,
+.cart-list {
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* hairline-separated rows carry their own rhythm via padding */
+.cart-list {
+  gap: 0;
+}
+
+/* empty lists explain themselves instead of collapsing silently */
+.sku-list:empty::after,
+.account-list:empty::after {
+  display: block;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px dashed var(--color-rule-2);
+  border-radius: var(--radius-ctl);
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+
+.sku-list:empty::after {
+  content: "No saved SKUs yet — fill the form below and press Save SKU.";
+}
+
+.account-list:empty::after {
+  content: "No saved accounts yet — saved logins appear here.";
+}
+
+.account-list button,
+.sku-list button {
+  width: 100%;
+  min-height: 32px;
+  padding: var(--space-xs) var(--space-md);
+  border-color: var(--color-rule);
+  color: var(--color-ink-2);
+  font-weight: 500;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (hover: hover) {
+  .account-list button:hover:not(:disabled),
+  .sku-list button:hover:not(:disabled) {
+    border-color: var(--color-accent);
+  }
+}
+
+.account-row,
+.sku-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  gap: var(--space-xs);
+}
+
+.account-row .remove-account,
+.sku-row .remove-sku {
+  padding: 0;
+  color: var(--color-danger);
+  font-family: var(--font-data);
+  text-align: center;
+}
+
+/* cart lines stay flat — hairline separators, no box-in-box nesting */
+.cart-row {
+  display: grid;
+  gap: var(--space-2xs);
+  padding: var(--space-sm) var(--space-3xs);
+}
+
+.cart-row + .cart-row {
+  border-top: 1px solid var(--color-rule);
+}
+
+.cart-row-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-width: 0;
+  color: var(--color-ink);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.cart-row-top .remove-ebgames-cart-line {
+  margin-left: auto;
+  flex-shrink: 0;
+  min-height: 24px;
+  padding: var(--space-3xs) var(--space-sm);
+  font-size: var(--text-2xs);
+}
+
+.cart-row-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* the plaintext-storage caveat is a real warning, not ordinary helper copy */
+#ebgames-card-form > .field-hint {
+  color: var(--color-warn);
+}
+
+.cart-row-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-success);
+  font-family: var(--font-data);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.02em;
+}
+
+.cart-row-status.out {
+  color: var(--color-danger);
+}
+
+.cart-row-status.out .status-light {
+  background: var(--color-danger);
+}
+
+.status-light {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  background: var(--color-success-dot);
+  border-radius: var(--radius-pill);
+}
+
+/* ---------- utility ---------- */
+
+.hidden {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+
+  .server-status .server-status-dot {
+    animation: none;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────
+ * Redesign treatment overrides — "Midnight + Pokéball red"
+ * Appended last so they win by source order. Pure visual; no DOM/JS
+ * contract is touched. See README → "Optional full-fidelity upgrades".
+ * ─────────────────────────────────────────────────────────────────── */
+
+/* Discord keeps its own brand blurple instead of the app accent. */
+#discord-sign-in.primary {
+  background: #5865f2;
+  border-color: #5865f2;
+  color: #ffffff;
+}
+@media (hover: hover) {
+  #discord-sign-in.primary:hover:not(:disabled) {
+    background: #4752c4;
+    border-color: #4752c4;
+    color: #ffffff;
+  }
+}
+#discord-sign-in.primary:focus-visible {
+  outline: 2px solid var(--color-card);
+  outline-offset: 0;
+  box-shadow: 0 0 0 4px #5865f2;
+}
+
+/* ───────────────────────────────────────────────────────────────────
+ * Saved-item CARDS — active once panel/sku-form.ts emits `li.sku-row.card`
+ * (see upgrades/sku-form.ts + upgrades/IMPLEMENTATION.md). Harmless until then.
+ * ─────────────────────────────────────────────────────────────────── */
+.sku-list .sku-row.card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-card);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+.sku-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.sku-card-name {
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--color-ink);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.sku-chip {
+  flex: 0 0 auto;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: var(--color-well);
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sku-card-meta {
+  font-family: var(--font-data);
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+.sku-card-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+#sku-list .sku-card-actions { flex-wrap: wrap; }
+#sku-list .sku-join-queue { flex-basis: 100%; order: 1; }
+.sku-card-actions button {
+  width: auto;
+  white-space: nowrap;
+  text-align: center;
+}
+.sku-card-actions .sku-buy { flex: 1; }
+.sku-card-actions .sku-edit,
+.sku-card-actions .remove-sku { flex: 0 0 auto; }
+/* the card's Remove is a normal secondary button, not the legacy tiny "x" */
+.sku-list .sku-row.card .remove-sku {
+  min-height: 32px;
+  padding: var(--space-xs) var(--space-md);
+  color: var(--color-ink-2);
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+@media (hover: hover) {
+  .sku-list .sku-row.card .remove-sku:hover:not(:disabled) {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────
+ * Status headline — "Armed / Standby / Offline" under the brand header.
+ * Text + data-state are set in sidepanel.ts (deriveListenState). aria-hidden:
+ * the live #server-status already announces the connection to screen readers.
+ * ─────────────────────────────────────────────────────────────────── */
+.monitor > .listen-state-panel { grid-column: 1 / -1; }
+.listen-state-panel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+}
+.listen-state-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: var(--radius-pill);
+  background: var(--color-idle-dot);
+}
+.listen-state-label {
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-ink-2);
+}
+.listen-state-sub {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.listen-state-panel[data-state="armed"] .listen-state-label { color: var(--color-ink); }
+.listen-state-panel[data-state="armed"] .listen-state-dot {
+  background: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent-wash), 0 0 0 4px var(--color-accent-wash);
+  animation: status-pulse 1.6s var(--ease-in-out) infinite;
+}
+
+/* Card-on-file masked summary ("•••• 4242 · Visa"), set in sidepanel.ts. */
+.card-on-file {
+  margin: 0;
+  color: var(--color-ink-2);
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───────────────────────────────────────────────────────────────────
+ * Appearance — a subtle accent-swatch in the header opens a small theme×accent
+ * popover (applied as :root vars). Kept tiny so it sits beside the title + chip.
+ * ─────────────────────────────────────────────────────────────────── */
+.appearance {
+  position: relative;
+  flex: 0 0 auto;
+}
+.appearance > summary.appearance-toggle {
+  display: block;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-rule-2);
+  background: var(--color-accent);
+  cursor: pointer;
+  list-style: none;
+}
+.appearance > summary.appearance-toggle::-webkit-details-marker {
+  display: none;
+}
+.appearance > summary.appearance-toggle::after {
+  content: none;
+}
+.appearance > summary.appearance-toggle:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+/* Signed out, lost session, or missing role: ring the swatch so the sign-in inside gets noticed. */
+.appearance[data-auth="attention"] > summary.appearance-toggle {
+  box-shadow: 0 0 0 2px var(--color-card), 0 0 0 4px var(--color-warn);
+}
+/* Discord access lives at the top of the menu, above theme and accent. */
+.appearance-access {
+  display: grid;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-rule-2);
+}
+.appearance-menu {
+  position: absolute;
+  top: calc(100% + var(--space-xs));
+  right: 0;
+  z-index: 50;
+  display: grid;
+  gap: var(--space-sm);
+  width: min(272px, calc(100vw - 2 * var(--space-md)));
+  padding: var(--space-md);
+  background: var(--color-card);
+  border: 1px solid var(--color-rule-2);
+  border-radius: var(--radius-card);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+select {
+  width: 100%;
+  min-height: 34px;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-rule-2);
+  border-radius: var(--radius-ctl);
+  background: var(--color-card);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+}
+select:focus-visible {
+  outline-color: var(--color-focus);
+  border-color: var(--color-accent);
+}
+
+/* ───────────────────────────────────────────────────────────────────
+ * EB Games "Pay with" segmented control (Card / PayPal) → one Checkout.
+ * ─────────────────────────────────────────────────────────────────── */
+.pay-with {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.pay-with-label {
+  color: var(--color-ink-2);
+  font-size: var(--text-xs);
+  font-weight: 550;
+}
+.segmented {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: var(--space-3xs);
+  padding: var(--space-3xs);
+  background: var(--color-well);
+  border: 1px solid var(--color-rule);
+  border-radius: calc(var(--radius-chip) + var(--space-3xs));
+}
+.segmented .segment {
+  min-height: 28px;
+  padding: var(--space-3xs) var(--space-md);
+  border: 1px solid transparent;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+}
+.segmented .segment.selected {
+  background: var(--color-accent-wash);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ───────────────────────────────────────────────────────────────────
+ * Collapsible "Add an item" form — the saved-item form tucks behind a
+ * dashed button until the user adds, or clicks a card's Edit (which opens it).
+ * ─────────────────────────────────────────────────────────────────── */
+.add-item {
+  display: grid;
+  gap: var(--space-md);
+}
+.add-item > summary {
+  justify-content: center;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px dashed var(--color-rule-2);
+  border-radius: var(--radius-ctl);
+  color: var(--color-ink-2);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.add-item > summary::after {
+  display: none;
+}
+@media (hover: hover) {
+  .add-item > summary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-ink);
+  }
+}
+.add-item[open] > summary {
+  color: var(--color-muted);
+}
+/* Once open, the form card replaces the button (the mock's New/Edit item card). */
+.add-item[open] > summary {
+  display: none;
+}
+.add-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.add-item-title {
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+.add-item-close {
+  min-height: 30px;
+  padding: var(--space-xs) var(--space-md);
+  border: 0;
+  border-radius: var(--radius-ctl);
+  background: transparent;
+  color: var(--color-muted);
+  font-size: var(--text-md);
+  line-height: 1;
+}
+@media (hover: hover) {
+  .add-item-close:hover:not(:disabled) {
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-ink);
+  }
+}
+
+/* 'CVV saved' note on a Costco card reads in the success colour (mock parity). */
+.sku-meta-note {
+  font-family: var(--font-ui);
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+/* ───────────────────────────────────────────────────────────────────
+ * EB Games account card — avatar initial + primary account email.
+ * (No inferred "signed in" status — login state is never guessed here.)
+ * ─────────────────────────────────────────────────────────────────── */
+.account-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-well);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-ctl);
+  color: var(--color-ink-2);
+  font-size: var(--text-xs);
+  min-width: 0;
+}
+.account-summary.empty {
+  color: var(--color-muted);
+}
+.account-avatar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-wash);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.account-summary-email {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * Mockup information architecture — header chip row, status hero,
+ * standalone alerts card, "Saved items · {site}" header, flat product.
+ * Appended last so these win by source order over the re-skin base.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Header: logo · brand · connection chip, all in one row. */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  grid-template-columns: none;
+  padding: var(--space-2xs) 0 0;
+}
+.brand-text {
+  flex: 1;
+  min-width: 0;
+}
+.header .server-status {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+/* Status hero: Status (left) + Local clock (right), then Master listener. */
+.hero {
+  gap: var(--space-lg);
+}
+.hero-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+.hero-status {
+  min-width: 0;
+}
+.listen-state {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+.listen-state-dot {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 auto;
+  border-radius: var(--radius-pill);
+  background: var(--color-idle-dot);
+}
+.listen-state-label {
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-2);
+}
+.listen-state-sub {
+  margin: var(--space-2xs) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.listen-state[data-state="armed"] .listen-state-label {
+  color: var(--color-ink);
+}
+.listen-state[data-state="armed"] .listen-state-dot {
+  background: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent-wash), 0 0 0 4px var(--color-accent-wash);
+  animation: status-pulse 1.6s var(--ease-in-out) infinite;
+}
+.hero-clock {
+  flex: 0 0 auto;
+  text-align: right;
+}
+.hero-clock .clock-display {
+  margin-top: var(--space-2xs);
+  font-size: 22px;
+  text-align: right;
+  color: var(--color-accent-deep);
+}
+.master-row {
+  padding: var(--space-lg) var(--space-3xs) 0;
+  border-top: 1px solid var(--color-rule);
+}
+
+/* Switches read text-left, toggle-right (mock). DOM order is text → input → track. */
+.switch-row {
+  justify-content: space-between;
+}
+.switch-row > .switch-text,
+.switch-row > .alerts-card-text {
+  flex: 1;
+  min-width: 0;
+}
+.alerts-card-text {
+  display: grid;
+  gap: 1px;
+}
+.alerts-sub {
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+}
+
+/* Per-module restock alerts — its own card under the tabs. */
+.alerts-card {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-card);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Auto Buy switch sits below the checkout button with a divider. */
+.auto-buy-row {
+  margin-top: var(--space-xs);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-rule);
+  cursor: default;
+}
+
+.add-item {
+  scroll-margin-block: var(--space-lg);
+}
+
+/* ── Saved items — notification-stack dropdown ─────────────────────
+ * Collapsed: a notification stack (top card in flow, the next two peek
+ * behind it, scaled + dimmed). Tapping opens an absolutely-positioned,
+ * scrim-backed dropdown overlay. Close via the chevron, scrim, or Esc. */
+.saved {
+  position: relative;
+}
+.saved-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-card);
+  border: 1px solid var(--color-rule);
+  border-radius: 13px;
+  color: var(--color-ink);
+  font-weight: 650;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .saved-toggle:hover:not(:disabled) {
+    background: var(--color-card-2);
+    border-color: var(--color-rule);
+    color: var(--color-ink);
+  }
+}
+.saved-toggle-overline {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.saved-spacer {
+  flex: 1;
+}
+.saved-count {
+  flex: 0 0 auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.saved-chevron {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-right: 1.6px solid var(--color-muted);
+  border-bottom: 1.6px solid var(--color-muted);
+  transform: rotate(45deg);
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.saved.open .saved-chevron {
+  transform: rotate(-135deg);
+}
+
+/* Collapsed: only the active (featured) card shows — fully interactable. The bar above
+ * opens the full list to switch which item is featured. */
+.saved-stack {
+  position: relative;
+  display: grid;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.saved.collapsed .saved-stack .sku-row.card:not(.is-active) {
+  display: none;
+}
+/* Nothing marked active yet (e.g. just-added) → feature the first row. */
+.saved.collapsed .saved-stack:not(:has(.sku-row.card.is-active)) .sku-row.card:not(:first-child) {
+  display: none;
+}
+
+/* Open: dropdown overlay (notification-center style) */
+.saved-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease-out);
+  z-index: 40;
+}
+.saved.open + .saved-scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+.saved.open .saved-stack {
+  position: absolute;
+  top: calc(100% + var(--space-sm));
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: grid;
+  gap: var(--space-sm);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  background: var(--color-card);
+  border: 1px solid var(--color-rule-2);
+  border-radius: var(--radius-card);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-rule-2) transparent;
+}
+.saved.open .saved-stack .sku-row.card {
+  position: relative;
+  background: var(--color-card-2);
+  animation: cardIn 0.24s var(--ease-out) both;
+}
+/* mark the currently-featured row in the open list */
+.saved.open .saved-stack .sku-row.card.is-active {
+  border-color: var(--color-accent);
+}
+.saved.open .saved-stack .sku-row.card:nth-child(2) { animation-delay: 0.03s; }
+.saved.open .saved-stack .sku-row.card:nth-child(3) { animation-delay: 0.06s; }
+.saved.open .saved-stack .sku-row.card:nth-child(4) { animation-delay: 0.09s; }
+.saved.open .saved-stack .sku-row.card:nth-child(n + 5) { animation-delay: 0.12s; }
+@keyframes cardIn {
+  from { transform: translateY(-8px); }
+  to { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .saved.open .saved-stack .sku-row.card { animation: none; }
+}
+
+/* Flattened Product disclosure — no "Product" chrome, just the saved items. */
+details.flat {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  gap: var(--space-md);
+}
+details.flat > summary {
+  display: none;
+}
+
+.account-edit {
+  margin-top: var(--space-2xs);
+}
+
+/* EB Games multi-SKU rows: extra inputs added by the small "+" button */
+#ebgames-extra-skus:empty {
+  display: none;
+}
+
+.ebgames-extra-sku-row {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.ebgames-extra-sku-row input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.ebgames-extra-sku-row .remove-extra-sku {
+  flex: 0 0 auto;
+  padding-inline: var(--space-sm);
+}
+
+#ebgames-add-sku {
+  align-self: flex-start;
+  padding-inline: var(--space-sm);
+}
+.costco-auto-login-interval {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+#costco-auto-login-interval {
+  width: 64px;
+  padding: var(--space-xs);
+}
+#costco-auto-login-result {
+  margin: var(--space-sm) 0 var(--space-xs);
+  color: var(--color-ink);
+}
+#costco-auto-login-steps {
+  margin: 0 0 var(--space-sm);
+  padding-left: 18px;
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  color: var(--color-ink-2);
+}
+#costco-auto-login-debug > .field-hint {
+  margin-top: var(--space-xs);
+}
+#costco-auto-login-log {
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+
+#pkc-status {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

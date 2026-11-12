@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PokeACO</title>
+    <link rel="stylesheet" href="sidepanel.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <img class="brand-logo" src="logoIcon.png" alt="PokeToolz">
+        <div class="brand-text">
+          <h1>PokeACO</h1>
+          <p id="site-label">PokeToolz</p>
+        </div>
+        <div id="server-status" class="server-status" data-state="idle" aria-live="polite">
+          <span class="server-status-dot"></span>
+          <span id="server-status-label">Offline</span>
+        </div>
+        <details id="appearance" class="appearance">
+          <summary class="appearance-toggle" aria-label="Account, theme and accent" title="Account, theme & accent"></summary>
+          <div class="appearance-menu">
+            <section id="discord-auth" class="appearance-access hidden" aria-label="Discord access">
+              <h2>Access</h2>
+              <p id="discord-auth-status" class="discord-auth-status" aria-live="polite"></p>
+              <div class="actions">
+                <button id="discord-sign-in" type="button" class="primary">Sign in with Discord</button>
+                <button id="discord-sign-out" type="button" class="secondary hidden">Sign out</button>
+              </div>
+              <p class="field-hint consent-hint">
+                By signing in you agree that usage analytics (extension version, checkouts, errors) are collected
+                with your Discord ID to improve reliability.
+              </p>
+            </section>
+            <label>
+              Theme
+              <select id="theme-select">
+                <option value="Midnight">Midnight</option>
+                <option value="Slate">Slate</option>
+                <option value="Terminal">Terminal</option>
+                <option value="Daylight">Daylight</option>
+              </select>
+            </label>
+            <label>
+              Accent
+              <select id="accent-select">
+                <option value="Poké Red">Poké Red</option>
+                <option value="Electric">Electric</option>
+                <option value="Grass">Grass</option>
+                <option value="Water">Water</option>
+                <option value="Psychic">Psychic</option>
+              </select>
+            </label>
+          </div>
+        </details>
+      </header>
+
+      <section class="panel hero" aria-label="Status">
+        <div class="hero-row">
+          <div class="hero-status">
+            <h2>Status</h2>
+            <div class="listen-state" data-state="offline">
+              <span class="listen-state-dot"></span>
+              <span id="listen-state-label" class="listen-state-label">Offline</span>
+            </div>
+            <p id="listen-state-sub" class="listen-state-sub">Not connected to backend</p>
+          </div>
+          <div class="hero-clock">
+            <h2>Local</h2>
+            <div class="clock-display" id="live-clock" role="timer" aria-label="Local time">--:--:--.-</div>
+          </div>
+        </div>
+        <label id="ws-toggle-row" class="switch-row master-row hidden">
+          <span class="switch-text">Master listener</span>
+          <input id="ws-toggle" class="switch-input" type="checkbox" role="switch">
+          <span class="switch-track" aria-hidden="true"></span>
+        </label>
+      </section>
+
+      <section class="panel status-panel" aria-label="Activity">
+        <div class="status-header">
+          <div class="status-title">
+            <h2>Activity</h2>
+            <label class="auto-stop" title="Stop all retry loops after about 1–1.5 hours">
+              <input id="auto-stop-toggle" type="checkbox" checked />
+              Auto-stop
+            </label>
+          </div>
+          <div class="status-actions">
+            <button id="ebgames-stop-action" type="button" class="secondary small danger hidden" title="Stop EB Games action">Stop</button>
+            <button id="clear-status" type="button" class="secondary small">Clear</button>
+          </div>
+        </div>
+        <ol id="status-log" class="status-log" role="log"></ol>
+      </section>
+
+      <nav id="site-tabs" class="site-tabs" role="tablist" aria-label="Sites">
+        <button id="walmart-tab" type="button" class="selected" role="tab" aria-selected="true" aria-controls="walmart-panel">Walmart</button>
+        <button id="costco-tab" type="button" role="tab" aria-selected="false" aria-controls="costco-panel">Costco</button>
+        <!-- EB Games is hidden for now; removing "hidden" restores the tab and its restock alerts. -->
+        <button id="ebgames-tab" type="button" class="hidden" role="tab" aria-selected="false" aria-controls="ebgames-panel">EB Games</button>
+        <button id="amazon-tab" type="button" role="tab" aria-selected="false" aria-controls="amazon-panel">Amazon</button>
+        <button id="pkc-tab" type="button" role="tab" aria-selected="false" aria-controls="pkc-panel">PKC</button>
+      </nav>
+
+      <section id="pkc-panel" class="site-panel hidden" role="tabpanel" aria-labelledby="pkc-tab">
+        <label class="switch-row alerts-card">
+          <span class="alerts-card-text">
+            <span class="switch-text">Pokémon Center alerts</span>
+            <span id="pkc-alerts-sub" class="alerts-sub">Master listener is off</span>
+          </span>
+          <input id="pkc-enabled" class="switch-input" type="checkbox" role="switch" disabled>
+          <span class="switch-track" aria-hidden="true"></span>
+        </label>
+        <section class="panel" aria-label="Pokémon Center status">
+          <div class="status-header">
+            <h2>Status</h2>
+            <button id="pkc-stop" type="button" class="secondary small danger" hidden disabled>Stop current attempt</button>
+          </div>
+          <p id="pkc-connection" class="field-hint"></p>
+          <p id="pkc-status" role="status" aria-live="polite"></p>
+        </section>
+      </section>
+
+      <section id="walmart-panel" class="site-panel" role="tabpanel" aria-labelledby="walmart-tab">
+        <section id="walmart-tasks" class="panel checkout-tasks" aria-label="Walmart tasks">
+          <div class="checkout-tasks-header">
+            <div><h2>Tasks</h2><span id="walmart-task-count" class="checkout-task-count">0 active</span></div>
+            <button id="walmart-tasks-stop-all" type="button" class="secondary small danger" disabled>Stop all</button>
+          </div>
+          <p id="walmart-tasks-empty" class="field-hint">Start Buy now or wait for an alert. Different SKUs run concurrently, with one task per SKU.</p>
+          <p id="walmart-tasks-error" class="field-hint hidden" role="alert"></p>
+          <ul id="walmart-task-list" class="checkout-task-list" aria-label="Walmart checkout tasks"></ul>
+          <div class="checkout-tasks-footer">
+            <button id="walmart-clear-finished" type="button" class="secondary small" disabled>Clear finished</button>
+          </div>
+        </section>
+
+
+        <label id="walmart-alerts-toggle-row" class="switch-row alerts-card">
+          <span class="alerts-card-text">
+            <span class="switch-text">Walmart restock alerts</span>
+            <span id="walmart-alerts-sub" class="alerts-sub"></span>
+          </span>
+          <input id="walmart-alerts-toggle" class="switch-input" type="checkbox" role="switch" checked>
+          <span class="switch-track" aria-hidden="true"></span>
+        </label>
+
+        <details id="product-details" class="panel flat" open>
+          <summary>Product</summary>
+          <div class="saved collapsed" id="walmart-saved">
+            <button class="saved-toggle" type="button" aria-expanded="false" aria-controls="sku-list">
+              <span class="saved-toggle-overline">Saved · Walmart</span>
+              <span id="walmart-saved-count" class="saved-count">0</span>
+              <span class="saved-spacer"></span>
+              <span class="saved-chevron" aria-hidden="true"></span>
+            </button>
+            <ul id="sku-list" class="sku-list saved-stack"></ul>
+          </div>
+          <div class="saved-scrim"></div>
+          <details class="add-item">
+            <summary>+ Add an item</summary>
+            <div class="add-item-head">
+              <span class="add-item-title">New item</span>
+              <button type="button" class="add-item-close" aria-label="Close add item">×</button>
+            </div>
+          <form id="sku-form" class="stack">
+            <div class="actions">
+              <button id="buy-sku" type="submit" class="primary">Buy now</button>
+              <button id="save-sku" type="button" class="secondary">Save SKU</button>
+            </div>
+            <label>
+              SKU
+              <input id="sku" name="sku" autocomplete="off" required>
+            </label>
+            <label>
+              Name
+              <input id="sku-name" name="sku-name" autocomplete="off">
+            </label>
+            <label id="quantity-field">
+              Quantity
+              <input id="quantity" name="quantity" type="number" min="1" step="1" value="1" required>
+            </label>
+            <label>
+              Max total (CAD, optional)
+              <input id="walmart-max-total" name="walmart-max-total" type="text" inputmode="decimal" autocomplete="off" aria-describedby="walmart-max-total-hint">
+              <p id="walmart-max-total-hint" class="field-hint">Includes all units, tax and delivery. Checkout stops if the total exceeds this limit. Only items sold by Walmart are eligible.</p>
+            </label>
+            <fieldset class="trigger-group">
+              <legend>Trigger matching</legend>
+              <label id="offer-id-field">
+                Offer ID (optional)
+                <input id="offer-id" name="offer-id" autocomplete="off" aria-describedby="offer-id-hint">
+                <p id="offer-id-hint" class="field-hint">
+                  Offer Id from a restock alert. Lets an alert match this item, requires SKU.
+                </p>
+              </label>
+              <label id="keyword-field">
+                Keyword (optional)
+                <input id="keyword" name="keyword" autocomplete="off" aria-describedby="keyword-hint">
+                <p id="keyword-hint" class="field-hint">
+                  Fires checkout when a restock alert's title contains this word, even if the Offer ID isn't saved. Case-insensitive.
+                </p>
+              </label>
+            </fieldset>
+            <details class="tuning">
+              <summary>Timing</summary>
+              <div class="field-row">
+                <label>
+                  Checkout time (s.ms)
+                  <input
+                    id="schedule-retry-second"
+                    name="schedule-retry-second"
+                    type="number"
+                    min="0"
+                    max="59.9"
+                    step="0.1"
+                    value="59"
+                    aria-describedby="schedule-retry-hint"
+                  >
+                </label>
+                <label>
+                  Submit delay (s)
+                  <input id="action-delay" name="action-delay" type="number" min="0" step="0.5" value="1">
+                </label>
+              </div>
+              <p id="schedule-retry-hint" class="field-hint">
+                0–59.9 — timed auto retries fire at this offset each minute, e.g. 58.5.
+              </p>
+            </details>
+          </form>
+          </details>
+        </details>
+      </section>
+
+      <section id="costco-panel" class="site-panel hidden" role="tabpanel" aria-labelledby="costco-tab">
+        <section id="costco-auto-login-panel" class="panel" aria-label="Costco auto-login">
+          <label class="switch-row">
+            <span class="switch-text">Auto-login</span>
+            <input id="costco-auto-login" class="switch-input" type="checkbox" role="switch" disabled>
+            <span class="switch-track" aria-hidden="true"></span>
+          </label>
+          <label class="costco-auto-login-interval">
+            <span>Check every</span>
+            <input id="costco-auto-login-interval" type="number" min="1" max="60" step="1" value="30" aria-label="Auto-login interval in minutes" required disabled>
+            <span>min</span>
+          </label>
+          <p id="costco-auto-login-status" class="field-hint" role="status" aria-live="polite">Auto-login is off.</p>
+          <p id="costco-auto-login-timing" class="field-hint"></p>
+          <details>
+            <summary>Costco account</summary>
+            <form id="costco-profile-form" class="stack">
+              <label><span>Email</span><input id="costco-email" type="email" autocomplete="username" required></label>
+              <label><span>Password</span><input id="costco-password" type="password" autocomplete="current-password"></label>
+              <p class="field-hint">Saved locally in this Chrome profile. Your password is sent only to Costco.</p>
+              <div class="button-row"><button type="submit" class="secondary">Save account</button><button id="costco-clear-profile" type="button" class="secondary small" disabled>Remove account</button></div>
+            </form>
+            <p id="costco-profile-status" class="field-hint" role="status"></p>
+          </details>
+          <details>
+            <summary>Last check</summary>
+            <p id="costco-auto-login-result" class="field-hint">No checks yet.</p>
+            <ul id="costco-auto-login-steps" aria-label="Check details"></ul>
+            <details id="costco-auto-login-debug" hidden>
+              <summary id="costco-auto-login-debug-summary">Debug details</summary>
+              <p class="field-hint">Check details and login requests. Cookie presence is shown; passwords, cookie values, and URL query values are omitted. Requests cancelled while helper tabs close are labelled separately.</p>
+              <pre id="costco-auto-login-log">No requests recorded yet.</pre>
+            </details>
+          </details>
+        </section>
+        <section id="costco-tasks" class="panel checkout-tasks" aria-label="Costco tasks">
+          <div class="checkout-tasks-header">
+            <div><h2>Tasks</h2><span id="costco-task-count" class="checkout-task-count">0 active</span></div>
+            <button id="costco-tasks-stop-all" type="button" class="secondary small danger" disabled>Stop all</button>
+          </div>
+          <p id="costco-tasks-empty" class="field-hint">Start Buy now or wait for an alert. Products run concurrently in the background.</p>
+          <p id="costco-tasks-error" class="field-hint hidden" role="alert"></p>
+          <ul id="costco-task-list" class="checkout-task-list" aria-label="Costco checkout tasks"></ul>
+          <div class="checkout-tasks-footer">
+            <button id="costco-clear-finished" type="button" class="secondary small" disabled>Clear finished</button>
+          </div>
+        </section>
+
+
+        <label id="costco-alerts-toggle-row" class="switch-row alerts-card">
+          <span class="alerts-card-text">
+            <span class="switch-text">Costco restock alerts</span>
+            <span id="costco-alerts-sub" class="alerts-sub"></span>
+          </span>
+          <input id="costco-alerts-toggle" class="switch-input" type="checkbox" role="switch" checked>
+          <span class="switch-track" aria-hidden="true"></span>
+        </label>
+
+        <details class="panel flat" open>
+          <summary>Product</summary>
+          <div class="saved collapsed" id="costco-saved">
+            <button class="saved-toggle" type="button" aria-expanded="false" aria-controls="costco-sku-list">
+              <span class="saved-toggle-overline">Saved · Costco</span>
+              <span id="costco-saved-count" class="saved-count">0</span>
+              <span class="saved-spacer"></span>
+              <span class="saved-chevron" aria-hidden="true"></span>
+            </button>
+            <ul id="costco-sku-list" class="sku-list saved-stack"></ul>
+          </div>
+          <div class="saved-scrim"></div>
+          <details class="add-item">
+            <summary>+ Add an item</summary>
+            <div class="add-item-head">
+              <span class="add-item-title">New item</span>
+              <button type="button" class="add-item-close" aria-label="Close add item">×</button>
+            </div>
+          <form id="costco-cart-form" class="stack">
+            <div class="actions">
+              <button id="costco-add-to-cart" type="submit" class="primary">Buy now</button>
+              <button id="costco-save-sku" type="button" class="secondary">Save SKU</button>
+            </div>
+            <label>
+              SKU
+              <!-- No `required`: PID-only / keyword-only rows have no SKU, and a blocked native
+                   validation silently swallows the submit (the bubble cannot even render inside
+                   the collapsed disclosure). Costco's features/products/panel.ts validates instead. -->
+              <input id="costco-sku" name="costco-sku" autocomplete="off">
+            </label>
+            <label>
+              Name
+              <input id="costco-sku-name" name="costco-sku-name" autocomplete="off">
+            </label>
+            <label>
+              Quantity
+              <input id="costco-quantity" name="costco-quantity" type="number" min="1" step="1" value="1" required>
+            </label>
+            <fieldset class="trigger-group">
+              <legend>Trigger matching</legend>
+              <label id="costco-pid-field">
+                PID (optional)
+                <input id="costco-pid" name="costco-pid" autocomplete="off" aria-describedby="costco-pid-hint">
+                <p id="costco-pid-hint" class="field-hint">
+                  Costco catalog PID from a restock alert. The SKU above stays the warehouse item # checkout needs.
+                </p>
+              </label>
+              <label id="costco-keyword-field">
+                Keyword (optional)
+                <input id="costco-keyword" name="costco-keyword" autocomplete="off" aria-describedby="costco-keyword-hint">
+                <p id="costco-keyword-hint" class="field-hint">
+                  Fires checkout when a restock alert's title contains this word, even if the PID isn't saved. Case-insensitive.
+                </p>
+              </label>
+            </fieldset>
+            <label>
+              CVV
+              <input
+                id="costco-cvv"
+                name="costco-cvv"
+                type="password"
+                inputmode="numeric"
+                maxlength="4"
+                autocomplete="cc-csc"
+                aria-describedby="costco-cvv-hint"
+              >
+              <p id="costco-cvv-hint" class="field-hint">
+                Optional for Buy now. Saved with this row when you click Save SKU (this device only).
+              </p>
+            </label>
+          </form>
+          </details>
+        </details>
+      </section>
+
+      <section id="amazon-panel" class="site-panel hidden" role="tabpanel" aria-labelledby="amazon-tab">
+        <label id="amazon-alerts-toggle-row" class="switch-row alerts-card">
+          <span class="alerts-card-text">
+            <span class="switch-text">Amazon restock alerts</span>
+            <span id="amazon-alerts-sub" class="alerts-sub"></span>
+          </span>
+          <input id="amazon-alerts-toggle" class="switch-input" type="checkbox" role="switch" checked>
+          <span class="switch-track" aria-hidden="true"></span>
+        </label>
+
+        <div class="switch-row auto-buy-row">
+          <span class="alerts-card-text">
+            <span class="switch-text">Place orders automatically</span>
+            <span id="amazon-auto-buy-hint" class="alerts-sub">Parallel tabs race to one order. Fresh alerts update active preparations and renew retries.</span>
+          </span>
+          <label class="switch-control" aria-label="Place Amazon orders automatically">
+            <input id="amazon-auto-buy" class="switch-input" type="checkbox" role="switch" checked>
+            <span class="switch-track" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <section class="panel amazon-checkout" aria-label="Amazon checkout">
+          <h2>Native checkout</h2>
+          <p class="field-hint">Uses your signed-in Amazon tabs. Two tabs prepare immediately; the first validated checkout places the order.</p>
+          <p class="field-hint">Different items can run at the same time. A confirmed or unconfirmed purchase counts toward the item's seven-day limit. Check Your Orders for uncertain results.</p>
+        </section>
+
+        <section id="amazon-tasks" class="panel checkout-tasks" aria-label="Amazon tasks">
+          <div class="checkout-tasks-header">
+            <div><h2>Tasks</h2><span id="amazon-task-count" class="checkout-task-count">0 active</span></div>
+            <button id="amazon-tasks-stop-all" type="button" class="secondary small danger" disabled>Stop all</button>
+          </div>
+          <p id="amazon-tasks-empty" class="field-hint">Buy now or wait for an alert.</p>
+          <p id="amazon-buy-status" class="field-hint hidden" role="status" aria-live="polite"></p>
+          <p id="amazon-tasks-error" class="field-hint hidden" role="alert"></p>
+          <ul id="amazon-task-list" class="checkout-task-list" aria-label="Amazon checkout tasks"></ul>
+          <div class="checkout-tasks-footer">
+            <button id="amazon-clear-finished" type="button" class="secondary small" disabled>Clear finished</button>
+            <button id="amazon-orders-sync" type="button" class="secondary small">Sync Orders</button>
+          </div>
+          <p id="amazon-orders-status" class="field-hint" role="status">Orders are checked hourly and after confirmed purchases.</p>
+          <details class="tuning">
+            <summary>Retries</summary>
+            <div class="field-row">
+              <label>Initial tabs<input id="amazon-tab-count" type="number" min="1" max="8" step="1" value="2"></label>
+              <label>Retry delay (s)<input id="amazon-retry-interval" type="number" min="0.1" max="30" step="0.1" value="1.5"></label>
+              <label>Renavigation retries<input id="amazon-max-attempts" type="number" min="1" max="100" step="1" value="4"></label>
+              <label>Checkout stall (s)<input id="amazon-stall-seconds" type="number" min="1" max="15" step="1" value="5"></label>
+              <label>Waves in flight<input id="amazon-waves-in-flight" type="number" min="1" max="3" step="1" value="2"></label>
+            </div>
+            <label class="toggle-row"><input id="amazon-wave-mode" type="checkbox" checked> Continue preparing parallel waves</label>
+            <label class="toggle-row"><input id="amazon-quantity-spread" type="checkbox"> Spread quantities from 1 to 3 (up to order quantity and remaining allowance)</label>
+            <p id="amazon-retry-hint" class="field-hint">Default: two tabs immediately, up to four open tabs, four renavigation retries. Loading tabs get eight seconds. The winning order gets sixty seconds for confirmation.</p>
+          </details>
+        </section>
+
+        <details class="panel flat" open>
+          <summary>Product</summary>
+          <div class="saved collapsed" id="amazon-saved">
+            <button class="saved-toggle" type="button" aria-expanded="false" aria-controls="amazon-sku-list">
+              <span class="saved-toggle-overline">Saved · Amazon</span>
+              <span id="amazon-saved-count" class="saved-count">0</span>
+              <span class="saved-spacer"></span>
+              <span class="saved-chevron" aria-hidden="true"></span>
+            </button>
+            <ul id="amazon-sku-list" class="sku-list saved-stack"></ul>
+          </div>
+          <div class="saved-scrim"></div>
+          <details class="add-item">
+            <summary>+ Add an item</summary>
+            <div class="add-item-head">
+              <span class="add-item-title">New item</span>
+              <button type="button" class="add-item-close" aria-label="Close add item">×</button>
+            </div>
+            <form id="amazon-form" class="stack">
+              <div class="actions">
+                <button id="amazon-buy-now" type="submit" class="primary">Buy now</button>
+                <button id="amazon-save-sku" type="button" class="secondary">Save ASIN</button>
+              </div>
+              <label>
+                ASIN (SKU)
+                <input id="amazon-sku" name="amazon-sku" maxlength="10" autocomplete="off" required>
+              </label>
+              <label>
+                Name
+                <input id="amazon-sku-name" name="amazon-sku-name" autocomplete="off">
+              </label>
+              <label>
+                Order quantity
+                <input id="amazon-quantity" name="amazon-quantity" type="number" min="1" max="30" step="1" value="1" required>
+              </label>
+              <label>
+                7-day limit
+                <input id="amazon-seven-day-limit" name="amazon-seven-day-limit" type="number" min="1" max="30" step="1" value="1" required aria-describedby="amazon-seven-day-limit-hint">
+                <span id="amazon-seven-day-limit-hint" class="field-hint">Maximum units across the last seven days. Each checkout buys up to your order quantity or the remaining allowance, whichever is smaller.</span>
+              </label>
+              <label>
+                Maximum price per unit (CAD)
+                <input id="amazon-max-unit" name="amazon-max-unit" type="number" min="0.01" step="0.01" aria-describedby="amazon-max-unit-hint">
+                <span id="amazon-max-unit-hint" class="field-hint">Before tax and delivery. Set a maximum or explicitly choose no price limit.</span>
+              </label>
+              <label class="toggle-row"><input id="amazon-no-price-limit" type="checkbox"> No price limit</label>
+              <label class="toggle-row"><input id="amazon-item-armed" type="checkbox" checked> Enable this item</label>
+              <label>Quantity spread for this item
+                <select id="amazon-item-spread"><option value="inherit">Use global setting</option><option value="on">On</option><option value="off">Off</option></select>
+              </label>
+              <p class="field-hint">
+                Uses your signed-in Amazon.ca session and saved address/payment. Confirmed and unconfirmed purchases count toward the 7-day limit. Preparation can add this item to your cart. An explicit duplicate-order confirmation may submit once more for the same purchase.
+              </p>
+            </form>
+          </details>
+        </details>
+      </section>
+
+      <section id="ebgames-panel" class="site-panel hidden" role="tabpanel" aria-labelledby="ebgames-tab">
+        <label id="ebgames-alerts-toggle-row" class="switch-row alerts-card">
+          <span class="alerts-card-text">
+            <span class="switch-text">EB Games restock alerts</span>
+            <span id="ebgames-alerts-sub" class="alerts-sub"></span>
+          </span>
+          <input id="ebgames-alerts-toggle" class="switch-input" type="checkbox" role="switch" checked>
+          <span class="switch-track" aria-hidden="true"></span>
+        </label>
+
+        <section class="panel">
+          <div class="status-header">
+            <h2>Cart</h2>
+            <button id="ebgames-refresh-cart" type="button" class="secondary small">Refresh</button>
+          </div>
+          <p id="ebgames-cart-status" class="field-hint" aria-live="polite">Cart not loaded.</p>
+          <ul id="ebgames-cart-list" class="cart-list"></ul>
+          <div class="pay-with">
+            <span class="pay-with-label">Pay with</span>
+            <div class="segmented" role="group" aria-label="Payment method">
+              <button id="ebgames-pay-card" type="button" class="segment selected" aria-pressed="true">Card</button>
+              <button id="ebgames-pay-paypal" type="button" class="segment" aria-pressed="false">PayPal</button>
+            </div>
+          </div>
+          <div class="switch-row auto-buy-row">
+            <span class="alerts-card-text">
+              <span class="switch-text">Auto Buy</span>
+              <span class="alerts-sub">Place the order automatically on restock</span>
+            </span>
+            <label class="switch-control" aria-label="EB Games Auto Buy">
+              <input id="ebgames-auto-buy" class="switch-input" type="checkbox" role="switch" checked>
+              <span class="switch-track" aria-hidden="true"></span>
+            </label>
+          </div>
+        </section>
+
+        <details class="panel flat" open>
+          <summary>Product</summary>
+          <div class="saved collapsed" id="ebgames-saved">
+            <button class="saved-toggle" type="button" aria-expanded="false" aria-controls="ebgames-sku-list">
+              <span class="saved-toggle-overline">Saved · EB Games</span>
+              <span id="ebgames-saved-count" class="saved-count">0</span>
+              <span class="saved-spacer"></span>
+              <span class="saved-chevron" aria-hidden="true"></span>
+            </button>
+            <ul id="ebgames-sku-list" class="sku-list saved-stack"></ul>
+          </div>
+          <div class="saved-scrim"></div>
+          <details class="add-item">
+            <summary>+ Add an item</summary>
+            <div class="add-item-head">
+              <span class="add-item-title">New item</span>
+              <button type="button" class="add-item-close" aria-label="Close add item">×</button>
+            </div>
+          <form id="ebgames-cart-form" class="stack">
+            <div class="actions">
+              <button id="ebgames-add-to-cart" type="submit" class="primary">Checkout</button>
+              <button id="ebgames-save-sku" type="button" class="secondary">Save SKU</button>
+            </div>
+            <label>
+              SKU
+              <input id="ebgames-sku" name="ebgames-sku" autocomplete="off" required>
+            </label>
+            <div id="ebgames-extra-skus"></div>
+            <button id="ebgames-add-sku" type="button" class="secondary" aria-label="Add another SKU" title="Add another SKU">+</button>
+            <label>
+              Name
+              <input id="ebgames-sku-name" name="ebgames-sku-name" autocomplete="off">
+            </label>
+            <label>
+              Quantity
+              <input id="ebgames-quantity" name="ebgames-quantity" type="number" min="1" step="1" value="1" required>
+            </label>
+          </form>
+          </details>
+        </details>
+
+        <section class="panel" aria-label="EB Games account">
+          <h2>Account · EB Games</h2>
+          <div id="ebgames-account-summary" class="account-summary"></div>
+          <details class="add-item account-edit">
+            <summary>+ Add or switch account</summary>
+            <div class="add-item-head">
+              <span class="add-item-title">Sign in</span>
+              <button type="button" class="add-item-close" aria-label="Close sign in">×</button>
+            </div>
+            <section class="subpanel">
+              <h2>Saved Accounts</h2>
+              <ul id="ebgames-account-list" class="account-list"></ul>
+            </section>
+            <form id="ebgames-profile-form" class="stack">
+              <label>
+                Email
+                <input id="ebgames-email" name="ebgames-email" type="email" autocomplete="username" required>
+              </label>
+              <label>
+                Password
+                <input
+                  id="ebgames-password"
+                  name="ebgames-password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                >
+              </label>
+              <div class="actions">
+                <button id="ebgames-save-profile" type="submit">Save</button>
+                <button id="ebgames-clear-profile" type="button" class="secondary">Clear</button>
+              </div>
+            </form>
+          </details>
+          <section class="subpanel">
+            <button id="ebgames-start-login" type="button" class="primary">Login to EB Games Canada</button>
+          </section>
+          <details class="tuning">
+            <summary>Card on file</summary>
+            <p id="ebgames-card-summary" class="card-on-file">No card saved</p>
+            <form id="ebgames-card-form" class="stack">
+              <div class="actions">
+                <button id="ebgames-save-card" type="submit" class="secondary">Save card</button>
+                <button id="ebgames-clear-card" type="button" class="secondary">Clear card</button>
+              </div>
+              <p id="ebgames-card-hint" class="field-hint">
+                Stored in plaintext on this device. Auto Buy signs in, adds your product SKU, and places the
+                order automatically — it buys everything currently in the cart.
+              </p>
+              <label>
+                Card number
+                <input id="ebgames-card-number" name="ebgames-card-number" autocomplete="off" inputmode="numeric" aria-describedby="ebgames-card-hint">
+              </label>
+              <label>
+                Name on card
+                <input id="ebgames-card-name" name="ebgames-card-name" autocomplete="off">
+              </label>
+              <label>
+                Billing phone
+                <input id="ebgames-card-phone" name="ebgames-card-phone" autocomplete="off" inputmode="tel">
+              </label>
+              <div class="actions">
+                <label>
+                  Exp. month
+                  <input id="ebgames-card-exp-month" name="ebgames-card-exp-month" autocomplete="off" inputmode="numeric" placeholder="MM">
+                </label>
+                <label>
+                  Exp. year
+                  <input id="ebgames-card-exp-year" name="ebgames-card-exp-year" autocomplete="off" inputmode="numeric" placeholder="YYYY">
+                </label>
+                <label>
+                  CVV
+                  <input id="ebgames-card-cvv" name="ebgames-card-cvv" type="password" autocomplete="off" inputmode="numeric">
+                </label>
+              </div>
+            </form>
+          </details>
+        </section>
+      </section>
+
+      <section class="panel" aria-label="Saved items backup">
+        <h2>Backup</h2>
+        <div class="actions">
+          <button id="export-skus" type="button" class="secondary">Export saved items</button>
+          <button id="import-skus" type="button" class="secondary">Import saved items</button>
+        </div>
+        <input id="import-skus-file" type="file" accept=".json,.txt" hidden>
+      </section>
+    </main>
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>

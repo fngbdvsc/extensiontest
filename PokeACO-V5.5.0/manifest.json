@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "PokeACO",
+  "description": "PokeToolz checkout assistant",
+  "version": "5.5.0",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "storage",
+    "tabs",
+    "windows",
+    "scripting",
+    "sidePanel",
+    "debugger",
+    "identity",
+    "cookies",
+    "alarms",
+    "declarativeNetRequestWithHostAccess",
+    "webRequest",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "https://www.pokemoncenter.com/*",
+    "https://*.hcaptcha.com/*",
+    "https://*.walmart.ca/*",
+    "https://identity.walmart.com/*",
+    "https://discord.com/*",
+    "https://*.costco.ca/*",
+    "https://www.recaptcha.net/recaptcha/*",
+    "https://signin.costco.com/*",
+    "https://signin-ui.costco.com/*",
+    "https://*.ebgames.ca/*",
+    "https://amazon.ca/*",
+    "https://*.amazon.ca/*",
+    "https://*.paypal.com/*",
+    "https://us.i.posthog.com/*",
+    "https://monitor-backend-p894.onrender.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "icons": {
+    "128": "logoIcon.png"
+  },
+  "action": {
+    "default_title": "PokeACO",
+    "default_icon": "logoIcon.png"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.amazon.ca/*",
+        "https://amazon.ca/*"
+      ],
+      "js": [
+        "amazon-native.js"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}
